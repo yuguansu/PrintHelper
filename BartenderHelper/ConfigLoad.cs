@@ -10,7 +10,7 @@ namespace BartenderHelper
         /// <summary>
         /// 获取标签的完整路径
         /// </summary>
-        /// <param name="sLabelName">文件名，带后缀，默认为BC_DEFAULT.btw</param>
+        /// <param name="sLabelName">文件名，带后缀，如果不传则默认为"BC_DEFAULT.btw"</param>
         /// <returns>返回标签的完整路径</returns>
         public static string GetLabelNameFull(string sLabelName)
         {
@@ -30,7 +30,7 @@ namespace BartenderHelper
             }
             catch (Exception)
             {
-                return "";
+                return null;
             }
         }
         

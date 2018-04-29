@@ -28,7 +28,7 @@ namespace TestPrintStandalone
             InitializeComponent();
         }
 
-        WriteLogs.WriteLog Log = new WriteLogs.WriteLog("Print","Bartender");
+        LogHelper.LogHelper Log = new LogHelper.LogHelper("Print","Bartender");
         private string sPathFolder = string.Empty;
         private string sPathConfig = string.Empty;
         private string sPathTemplet = string.Empty;
@@ -66,28 +66,28 @@ namespace TestPrintStandalone
         {
             try
             {
-                Log.WriteLogsStart();
-                Log.WriteLogs("Get Print List");
+                Log.WriteLogStart();
+                Log.WriteLog("Get Print List");
                 listLabel = GetListPrintLabel(lstSNNew);
                 if (listLabel.Count<=0)
                 {
-                    Log.WriteLogs("Get Print List Error , no label");
+                    Log.WriteLog("Get Print List Error , no label");
                     return;
                 }
-                Log.WriteLogs("Get Print List OK");
+                Log.WriteLog("Get Print List OK");
                 // Calling constructor with 'true' automatically starts engine. 
                 using (Engine btEngine = new Engine(true))
                 {
                     //定义标签变量，初始化标签模板，指定打印机
                     LabelFormatDocument btFormat = btEngine.Documents.Open(sPathTemplet, cmbPrinter.Text);
                     
-                    Log.WriteLogs("Print Engine Start.");
+                    Log.WriteLog("Print Engine Start.");
 
                     // Application specific code 
                     // Explicitly start the engine 
                     btEngine.Start();
 
-                    Log.WriteLogs("Print Engine Start OK.");
+                    Log.WriteLog("Print Engine Start OK.");
 
                     #region //更改打印参数
                     //指定打印机
@@ -105,20 +105,20 @@ namespace TestPrintStandalone
                     #endregion
                     for (int i = 0; i < listLabel.Count; i++)
                     {
-                        Log.WriteLogs("Open Print Label Start.");
+                        Log.WriteLog("Open Print Label Start.");
 
                         //Reading Named Substrings ,读取标签字段
                         txtSNOld.Text = btFormat.SubStrings["SERIAL_NUMBER"].Value;
                         btFormat.SubStrings["SERIAL_NUMBER"].Value = listLabel[i];
 
-                        Log.WriteLogs("Open Print Label OK.");
+                        Log.WriteLog("Open Print Label OK.");
 
-                        Log.WriteLogs("PrintJob Start.");
+                        Log.WriteLog("PrintJob Start.");
 
                         //Print Label ,打印标签
                         Result result = btFormat.Print("PrintJob1");
 
-                        Log.WriteLogs("PrintJob Finish.");
+                        Log.WriteLog("PrintJob Finish.");
                     }
 
                     #region //五种打印方法
@@ -146,30 +146,30 @@ namespace TestPrintStandalone
                     //}
                     #endregion
 
-                    Log.WriteLogs("Close Print Label.");
+                    Log.WriteLog("Close Print Label.");
 
                     //Close Label Format ,关闭标签模板
                     btFormat.Close(SaveOptions.DoNotSaveChanges);
 
-                    Log.WriteLogs("Close Print Label OK.");
-                    Log.WriteLogs("Print Engine Stop.");
+                    Log.WriteLog("Close Print Label OK.");
+                    Log.WriteLog("Print Engine Stop.");
 
                     // Application-specific code 
                     // Assuming the application wants to save changes, 
                     //     it can be easily done at Stop time. 
                     btEngine.Stop(SaveOptions.SaveChanges);
 
-                    Log.WriteLogs("Print Engine Stop OK.");
+                    Log.WriteLog("Print Engine Stop OK.");
                 }
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
-                Log.WriteLogs(ex.Message);
+                Log.WriteLog(ex.Message);
             }
             finally
             {
-                Log.WriteLogsEnd();
+                Log.WriteLogEnd();
             }
         }
 
