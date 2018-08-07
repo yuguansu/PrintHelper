@@ -5,33 +5,34 @@ using System.Reflection;
 
 namespace BartenderHelper
 {
+    /// <summary>
+    /// 获取标签模板的完整路径
+    /// </summary>
     public class ConfigLoad
     {
         /// <summary>
-        /// 获取标签的完整路径
+        /// 获取标签模板的完整路径
         /// </summary>
         /// <param name="sLabelName">文件名，带后缀，如果不传则默认为"BC_DEFAULT.btw"</param>
         /// <returns>返回标签的完整路径</returns>
         public static string GetLabelNameFull(string sLabelName)
         {
-            string sPathFolder;
-            try
+            //获取当前程序集的路径
+            string sPathFolder = Path.GetDirectoryName(new Uri(Assembly.GetExecutingAssembly().CodeBase).LocalPath);
+            string sLabel = string.Empty;
+            if (string.IsNullOrEmpty(sLabelName) && sLabelName.Substring(sLabelName.LastIndexOf(".")+1)!="btw")
             {
-                //获取当前程序集的路径
-                sPathFolder = Path.GetDirectoryName(new Uri(Assembly.GetExecutingAssembly().CodeBase).LocalPath);
-                if (string.IsNullOrEmpty(sLabelName))
-                {
-                    return sPathFolder + "\\" + "BC_DEFAULT.btw";
-                }
-                else
-                {
-                    return (sPathFolder + "\\" + sLabelName);
-                }
+                sLabel = sPathFolder + "\\" + "BC_DEFAULT.btw";
             }
-            catch (Exception)
+            else
             {
-                return null;
+                sLabel = (sPathFolder + "\\" + sLabelName);
             }
+            if (string.IsNullOrEmpty(sLabel))
+                throw new Exception("LabelName is null");
+            if (!File.Exists(sLabel))
+                throw new Exception("LabelName not exists : "+sLabel);
+            return sLabel;
         }
         
         /// <summary>

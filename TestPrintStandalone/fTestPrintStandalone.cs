@@ -28,7 +28,7 @@ namespace TestPrintStandalone
             InitializeComponent();
         }
 
-        LogHelper.LogHelper Log = new LogHelper.LogHelper("Print","Bartender");
+        LogHelper.LogHelperUtils Log = new LogHelper.LogHelperUtils("Print","Bartender");
         private string sPathFolder = string.Empty;
         private string sPathConfig = string.Empty;
         private string sPathTemplet = string.Empty;
@@ -78,14 +78,14 @@ namespace TestPrintStandalone
                 // Calling constructor with 'true' automatically starts engine. 
                 using (Engine btEngine = new Engine(true))
                 {
+                    // Application specific code 
+                    // Explicitly start the engine 
+                    btEngine.Start();
+
                     //定义标签变量，初始化标签模板，指定打印机
                     LabelFormatDocument btFormat = btEngine.Documents.Open(sPathTemplet, cmbPrinter.Text);
                     
                     Log.WriteLog("Print Engine Start.");
-
-                    // Application specific code 
-                    // Explicitly start the engine 
-                    btEngine.Start();
 
                     Log.WriteLog("Print Engine Start OK.");
 

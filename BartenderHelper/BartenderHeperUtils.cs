@@ -1,16 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
 using Seagull.BarTender.Print;
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- * 日期：2017-12-23
- * 版本：1.0.0.0
- * 人员：铅笔
- * 内容：使用bartender 2016 sdk开发
- * 注意：必须选择x86模式编译
- * 
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+/// 日期：2017-12-23
+/// * 版本：1.0.0.0
+/// * 人员：铅笔
+/// * 内容：使用bartender 2016 sdk开发
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 namespace BartenderHelper
 {
+    /// <summary>
+    /// 直接调用静态方法打印，无需外部初始化，自带日志记录
+    /// * 注意：必须选择x86模式编译
+    /// * 使用方式：打印参数设置好后，直接调用静态函数打印
+    /// * 弊端：1.打印engine启动和停止时间较长，调试机启动大约6秒。
+    ///         2.无法作为服务调用。
+    /// </summary>
     public class BartenderHeperUtils
     {
         #region 构造方法
@@ -45,7 +51,7 @@ namespace BartenderHelper
         /// <summary>
         /// 单个标签内容连续打印次数
         /// </summary>
-        public static int iQtySingleLabel { get; set; }
+        public static int iQtyLabel { get; set; }
         /// <summary>
         /// 整体重复次数
         /// </summary>
@@ -54,7 +60,7 @@ namespace BartenderHelper
         /// <summary>
         /// 记录日志
         /// </summary>
-        public static WriteLogs.WriteLog Log = new WriteLogs.WriteLog("Print","BartenderHelper");
+        public static LogHelper.LogHelperUtils Log = new LogHelper.LogHelperUtils("Print", "BartenderHeperUtils");
         #endregion
 
         #region 打印方法
@@ -69,24 +75,25 @@ namespace BartenderHelper
             try
             {
                 //打印任务开始
-                Log.WriteLogsStart();
+                Log.WriteLogStart();
                 //启动打印引擎
                 btEngine.Start();
-                Log.WriteLogs("--Print Engine Start OK--");
+                Log.WriteLog("--Print Engine Start OK--");
 
                 //获取标签完整路径
                 sLabelNameFull = ConfigLoad.GetLabelNameFull(sLabel);
-                Log.WriteLogs("--Get full label path : " + sLabelNameFull + "--");
+                Log.WriteLog("--Get full label path : " + sLabelNameFull + "--");
                 //获取打印机名称
                 sPrinterName = string.IsNullOrEmpty(sPrinter) ? ConfigLoad.GetDefaultPrinterName() : sPrinter;
-                Log.WriteLogs("--Printer : " + sPrinterName);
+                Log.WriteLog("--Printer : " + sPrinterName);
                 //加载标签模板，指定打印机
                 btFormatDoc = btEngine.Documents.Open(sLabelNameFull, sPrinterName);
-                Log.WriteLogs("--FormatDoc opened--");
+                Log.WriteLog("--FormatDoc opened--");
                 return true;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Log.WriteLog(ex.Message);
                 return false;
             }
         }
@@ -100,29 +107,42 @@ namespace BartenderHelper
             {
                 //关闭标签模板
                 btFormatDoc.Close(SaveOptions.DoNotSaveChanges);
-                Log.WriteLogs("--FormatDocument closed--");
+                Log.WriteLog("--FormatDocument closed--");
                 //停止打印引擎
                 btEngine.Stop();
-                Log.WriteLogs("--Print Engine Stop--");
-                Log.WriteLogsEnd();
+                Log.WriteLog("--Print Engine Stop--");
+                Log.WriteLogEnd();
                 //打印任务结束
                 return true;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Log.WriteLog(ex.Message);
                 return false;
             }
         }
         
         /// <summary>
-        /// 打印单个标签
+        /// 打印单个标签，直接打印一次，无参数
         /// </summary>
         /// <param name="sLabel">标签名称，可为空，默认值为BC_DEFAULT.btw</param>
         /// <param name="sPrinter">打印机名称，可为空，默认值为系统默认打印机</param>
         public static bool PrintLabel(string sLabel,string sPrinter)
         {
+            Log.WriteLog("--Call Function [ PrintLabel(string sLabel, string sPrinter,int iRepeatNumberOfSingleLabel) ]--");
+            return PrintLabel(sLabel, sPrinter,1);
+        }
+
+        /// <summary>
+        /// 打印单个标签，无参数，指定打印次数
+        /// </summary>
+        /// <param name="sLabel">标签名称，可为空，默认值为BC_DEFAULT.btw</param>
+        /// <param name="sPrinter">打印机名称，可为空，默认值为系统默认打印机</param>
+        /// <param name="iRepeatNumberOfSingleLabel">单个标签的连续打印数量</param>
+        public static bool PrintLabel(string sLabel, string sPrinter,int iRepeatNumberOfSingleLabel)
+        {
             //记录参数
-            Log.WriteLogs("--Params : " + sLabel + ";" + sPrinter + ";");
+            Log.WriteLog("-- Params : Label = " + sLabel + "; Print = " + sPrinter + ";");
             try
             {
                 //开始打印
@@ -130,11 +150,20 @@ namespace BartenderHelper
                 {
                     return false;
                 }
-
+                try
+                {
+                    iQtyLabel = iRepeatNumberOfSingleLabel > 0 ? iRepeatNumberOfSingleLabel : 1;
+                }
+                catch (Exception)
+                {
+                    iQtyLabel = 1;
+                }
+                //设置重复打印数量
+                btFormatDoc.PrintSetup.IdenticalCopiesOfLabel = iQtyLabel;
                 //打印标签
-                Log.WriteLogs("--Print Start : PrintJob1--");
+                Log.WriteLog("--Print Start : PrintJob1--");
                 btFormatDoc.Print("PrintJob1");
-                Log.WriteLogs("--Print Label OK : " + sLabelNameFull);
+                Log.WriteLog("--Print Label OK : " + sLabelNameFull);
 
                 //结束打印
                 PrintLabelEnd();
@@ -143,8 +172,8 @@ namespace BartenderHelper
             }
             catch (Exception ex)
             {
-                Log.WriteLogs("--[Execute error]--public static bool PrintLabel(string sLabel,string sPrinter)--");
-                Log.WriteLogs("--[System Error Msg]--" + ex.Message);
+                Log.WriteLog("--[Execute error]--public static bool PrintLabel(string sLabel,string sPrinter)--");
+                Log.WriteLog("--[System Error Msg]--" + ex.Message);
                 return false;
             }
         }
@@ -158,8 +187,7 @@ namespace BartenderHelper
         /// <param name="sSubstringValue">标签内的变量值</param>
         public static bool PrintLabel(string sLabel, string sPrinter,string sSubstringName, string sSubstringValue)
         {
-            Log.WriteLogsStart();
-            Log.WriteLogs("--Call Function [public static bool PrintLabel("+ sLabel+" , "+ sPrinter + ", "+ sSubstringName + " , "+ sSubstringValue + " , 1 )]--");
+            Log.WriteLog("--Call Function [ PrintLabel("+ sLabel+" , "+ sPrinter + ", "+ sSubstringName + " , "+ sSubstringValue + " , 1 ) ]--");
             return PrintLabel(sLabel, sPrinter, sSubstringName, sSubstringValue, 1);
         }
 
@@ -170,56 +198,18 @@ namespace BartenderHelper
         /// <param name="sPrinter">打印机名称，可为空，默认值为系统默认打印机</param>
         /// <param name="sSubstringName">标签内的变量名称</param>
         /// <param name="sSubstringValue">标签内的变量值</param>
-        /// <param name="iLabelQty">单个标签内容的连续打印数量</param>
+        /// <param name="iRepeatNumberOfSingleLabel">单个标签内容的连续打印数量</param>
         /// <returns></returns>
-        public static bool PrintLabel(string sLabel, string sPrinter, string sSubstringName, string sSubstringValue,int iLabelQty)
+        public static bool PrintLabel(string sLabel, string sPrinter, string sSubstringName, string sSubstringValue,int iRepeatNumberOfSingleLabel)
         {
-            //记录参数
-            Log.WriteLogs("--Params : " + sLabel + ";" + sPrinter + ";" + sSubstringName + ";" + sSubstringValue + ";" + iLabelQty + ";" + "--");
-            try
-            {
-                //开始打印
-                if (!PrintLabelStart(sLabel, sPrinter))
-                {
-                    return false;
-                }
-
-                //更改标签内容
-                btFormatDoc.SubStrings[sSubstringName].Value = sSubstringValue;
-                Log.WriteLogs("--Value in label : " + sSubstringName + " = " + sSubstringValue);
-
-                //更改打印数量
-                try
-                {
-                    iQtySingleLabel = iLabelQty > 0 ? iLabelQty : 1;
-                }
-                catch (Exception)
-                {
-                    iQtySingleLabel = 1;
-                }
-                btFormatDoc.PrintSetup.IdenticalCopiesOfLabel = iQtySingleLabel;
-                Log.WriteLogs("--Qty of single label : "+ iQtySingleLabel);
-
-                //打印标签
-                Log.WriteLogs("--Print Start : PrintJob1--");
-                btFormatDoc.Print("PrintJob1");
-                Log.WriteLogs("--Print Label OK : " + sLabelNameFull);
-
-                //结束打印
-                PrintLabelEnd();
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Log.WriteLogs("--[Execute error]--public static bool PrintLabel(string sLabel, string sPrinter, string sSubstringName, string sSubstringValue,int iLabelQty)--");
-                Log.WriteLogs("--[System Error Msg]--" + ex.Message);
-                return false;
-            }
+            Log.WriteLog("public static bool PrintLabel(string sLabel, string sPrinter, string sSubstringName, List<string> lstValue,int iRepeatNumberOfSingleLabel)");
+            List<string> lstValue = new List<string> { };
+            lstValue.Add(sSubstringValue);
+            return PrintLabel(sLabel, sPrinter, sSubstringName, lstValue, iRepeatNumberOfSingleLabel);
         }
 
         /// <summary>
-        /// 打印多个标签内容，标签中只有一个变量
+        /// 打印多个不同标签，标签模板中只有一个变量
         /// </summary>
         /// <param name="sLabel">标签名称，可为空，默认值为BC_DEFAULT.btw</param>
         /// <param name="sPrinter">打印机名称，可为空，默认值为系统默认打印机</param>
@@ -228,84 +218,36 @@ namespace BartenderHelper
         /// <returns></returns>
         public static bool PrintLabel(string sLabel, string sPrinter, string sSubstringName, List<string> lstValue)
         {
-            string slistValue = string.Empty;
-            foreach (var item in lstValue)
-            {
-                slistValue += "{";
-                slistValue += item + ",";
-                slistValue += "}";
-            }
-            Log.WriteLogsStart();
-            Log.WriteLogs("--Call Function [public static bool PrintLabel(" + sLabel + " , " + sPrinter + " , " + sSubstringName + " , " + "1 )]--");
+            Log.WriteLog("public static bool PrintLabel(string sLabel, string sPrinter, string sSubstringName, List<string> lstValue,int iRepeatNumberOfSingleLabel)");
             return PrintLabel(sLabel, sPrinter, sSubstringName, lstValue, 1);
         }
 
         /// <summary>
-        /// 打印多个标签内容，标签中只有一个变量，指定单个标签内容的重复打印数量
+        /// 打印多个不同标签，标签模板中只有一个变量，指定重复打印数量
         /// </summary>
         /// <param name="sLabel">标签名称，可为空，默认值为BC_DEFAULT.btw</param>
         /// <param name="sPrinter">打印机名称，可为空，默认值为系统默认打印机</param>
         /// <param name="sSubstringName">标签内的变量名称</param>
         /// <param name="lstValue">标签内的变量值</param>
-        /// <param name="iLabelQty">单个标签内容的连续打印数量</param>
+        /// <param name="iRepeatNumberOfSingleLabel">单个标签内容的连续打印数量</param>
         /// <returns></returns>
-        public static bool PrintLabel(string sLabel, string sPrinter, string sSubstringName, List<string> lstValue,int iLabelQty)
+        public static bool PrintLabel(string sLabel, string sPrinter, string sSubstringName, List<string> lstValue,int iRepeatNumberOfSingleLabel)
         {
-            string listValue = string.Empty;
-            foreach (var item in lstValue)
+            Log.WriteLog("--Call Function [ PrintLabel(string sLabel, string sPrinter, List<string> lstSubstringName, List<List<string>> lstValue, int iRepeatNumberOfSingleLabel) ]--");
+            List<string> lstSubstringName = new List<string> { };
+            lstSubstringName.Add(sSubstringName);
+            List<List<string>> lstValue2 = new List<List<string>> { };
+            foreach (var value in lstValue)
             {
-                listValue += "{";
-                listValue += item + ",";
-                listValue += "}";
+                List<string> newValue = new List<string> { };
+                newValue.Add(value);
+                lstValue2.Add(newValue);
             }
-            //记录参数
-            Log.WriteLogs("--Params : " + sLabel + ";" + sPrinter + ";" + sSubstringName + ";" + listValue + ";" + iLabelQty + ";" + "--");
-            try
-            {
-                //开始打印
-                if (!PrintLabelStart(sLabel, sPrinter))
-                {
-                    return false;
-                }
-
-                //更改打印数量
-                try
-                {
-                    iQtySingleLabel = iLabelQty > 0 ? iLabelQty : 1;
-                }
-                catch (Exception)
-                {
-                    iQtySingleLabel = 1;
-                }
-                btFormatDoc.PrintSetup.IdenticalCopiesOfLabel = iQtySingleLabel;
-                Log.WriteLogs("--Qty of single label : " + iQtySingleLabel);
-
-                //更改标签内容
-                for (int iValue = 0; iValue < lstValue.Count; iValue++)
-                {
-                    btFormatDoc.SubStrings[sSubstringName].Value = lstValue[iValue];
-                    Log.WriteLogs("--Value in label : " + sSubstringName + " = " + lstValue[iValue]);
-                    //打印标签
-                    Log.WriteLogs("--PrintJob Start : PrintJob" + iValue + "--");
-                    btFormatDoc.Print("PrintJob" + iValue);
-                    Log.WriteLogs("--PrintJob finish : PrintJob" + iValue + "--");
-                }
-
-                //结束打印
-                PrintLabelEnd();
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Log.WriteLogs("--[Execute error]--public static bool PrintLabel(string sLabel, string sPrinter, string sSubstringName, List<string> lstValue,int iLabelQty)--");
-                Log.WriteLogs("--[System Error Msg]--" + ex.Message);
-                return false;
-            }
+            return PrintLabel(sLabel, sPrinter, lstSubstringName, lstValue, 1);
         }
 
         /// <summary>
-        /// 打印单个标签内容，标签中有多个变量
+        /// 打印单个标签内容，标签模板中有多个变量
         /// </summary>
         /// <param name="sLabel">标签名称，可为空，默认值为BC_DEFAULT.btw</param>
         /// <param name="sPrinter">打印机名称，可为空，默认值为系统默认打印机</param>
@@ -314,95 +256,29 @@ namespace BartenderHelper
         /// <returns></returns>
         public static bool PrintLabel(string sLabel, string sPrinter, List<string> lstSubstringName, List<string> lstValue)
         {
-            //整理参数
-            string sSubstringName = string.Empty;
-            foreach (var item in lstSubstringName)
-            {
-                sSubstringName += item + ",";
-            }
-            string slistValue = string.Empty;
-            foreach (var item in lstValue)
-            {
-                slistValue += item + ",";
-            }
-
-            Log.WriteLogsStart();
-            Log.WriteLogs("--Call Function [public static bool PrintLabel(" + sLabel + " , " + sPrinter + " , " + sSubstringName + " , " + slistValue + ", 1]--");
+            Log.WriteLog("PrintLabel(string sLabel, string sPrinter, List<string> lstSubstringName, List<string> lstValue, int iRepeatNumberOfSingleLabel)");
             return PrintLabel(sLabel, sPrinter, lstSubstringName, lstValue, 1);
         }
 
         /// <summary>
-        /// 打印单个标签内容，标签中有多个变量，指定单个标签内容的重复打印数量
+        /// 打印单个标签内容，标签模板中有多个变量，指定单个标签内容的重复打印数量
         /// </summary>
         /// <param name="sLabel">标签名称，可为空，默认值为BC_DEFAULT.btw</param>
         /// <param name="sPrinter">打印机名称，可为空，默认值为系统默认打印机</param>
         /// <param name="lstSubstringName">标签内的变量名称</param>
         /// <param name="lstValue">标签内的变量值</param>
-        /// <param name="iLabelQty">单个标签内容的连续打印数量</param>
+        /// <param name="iRepeatNumberOfSingleLabel">单个标签内容的连续打印数量</param>
         /// <returns></returns>
-        public static bool PrintLabel(string sLabel, string sPrinter, List<string> lstSubstringName, List<string> lstValue, int iLabelQty)
+        public static bool PrintLabel(string sLabel, string sPrinter, List<string> lstSubstringName, List<string> lstValue, int iRepeatNumberOfSingleLabel)
         {
-            #region //记录参数
-            string sSubstringName = string.Empty;
-            foreach (var item in lstSubstringName)
-            {
-                sSubstringName += item + ",";
-            }
-            string slistValue = string.Empty;
-            foreach (var item in lstValue)
-            {
-                slistValue += item + ",";
-            }
-            Log.WriteLogs("--Params : " + sLabel + ";" + sPrinter + ";" + sSubstringName + ";" + slistValue + ";" + iLabelQty + "--");
-            #endregion
-            try
-            {
-                //开始打印
-                if (!PrintLabelStart(sLabel, sPrinter))
-                {
-                    return false;
-                }
-
-                //更改打印数量
-                try
-                {
-                    iQtySingleLabel = iLabelQty > 0 ? iLabelQty : 1;
-                }
-                catch (Exception)
-                {
-                    iQtySingleLabel = 1;
-                }
-                btFormatDoc.PrintSetup.IdenticalCopiesOfLabel = iQtySingleLabel;
-                Log.WriteLogs("--Qty of single label : " + iQtySingleLabel);
-
-                //更改标签内容
-                for (int iValue = 0; iValue < lstSubstringName.Count; iValue++)
-                {
-                    btFormatDoc.SubStrings[lstSubstringName[iValue]].Value = lstValue[iValue];
-                    Log.WriteLogs("--Value in label : " + sSubstringName + " = " + lstValue[iValue]);
-                }
-                //打印标签
-                Log.WriteLogs("--PrintJob Start : PrintJob1" + "--");
-                btFormatDoc.Print("PrintJob1");
-                Log.WriteLogs("--PrintJob finish : PrintJob1");
-
-                //结束打印
-                PrintLabelEnd();
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Log.WriteLogs("--[Execute error]--public static bool PrintLabel(string sLabel, string sPrinter, List<string> lstSubstringName, List<string> lstValue, int iLabelQty)--");
-                Log.WriteLogs("--[System Error Msg]--" + ex.Message);
-
-                return false;
-            }
-
+            Log.WriteLog("--Call Function [ PrintLabel(string sLabel, string sPrinter, List<string> lstSubstringName, List<List<string>> lstValue, int iRepeatNumberOfSingleLabel) ]--");
+            List<List<string>> lstValue2 = new List<List<string>> { };
+            lstValue2.Add(lstValue);
+            return PrintLabel(sLabel, sPrinter, lstSubstringName, lstValue2, 1);
         }
 
         /// <summary>
-        /// 打印多个标签内容，标签中有多个变量
+        /// 打印多个不同标签内容，标签模板中有多个变量
         /// </summary>
         /// <param name="sLabel">标签名称，可为空，默认值为BC_DEFAULT.btw</param>
         /// <param name="sPrinter">打印机名称，可为空，默认值为系统默认打印机</param>
@@ -411,26 +287,7 @@ namespace BartenderHelper
         /// <returns></returns>
         public static bool PrintLabel(string sLabel, string sPrinter,List<string> lstSubstringName, List<List<string>> lstValue)
         {
-            //整理参数
-            string sSubstringName = string.Empty;
-            foreach (var item in lstSubstringName)
-            {
-                sSubstringName += item + ",";
-            }
-            string slistValue = string.Empty;
-            foreach (var item1 in lstValue)
-            {
-                slistValue += "{";
-                foreach (var item2 in item1)
-                {
-                    slistValue += item2 + ",";
-                }
-                slistValue += "}";
-            }
-            Log.WriteLogs("--Params : " + sLabel + ";" + sPrinter + ";" + sSubstringName + ";" + slistValue + ";" + "--");
-
-            Log.WriteLogsStart();
-            Log.WriteLogs("--Call Function [public static bool PrintLabel(" + sLabel + " , " + sPrinter + " , " + sSubstringName + " , " + slistValue + ", 1]--");
+            Log.WriteLog("--Call Function [PrintLabel(string sLabel, string sPrinter, List<string> lstSubstringName, List<List<string>> lstValue, int iRepeatNumberOfSingleLabel) ]--");
             return PrintLabel(sLabel, sPrinter, lstSubstringName, lstValue, 1);
         }
 
@@ -441,15 +298,33 @@ namespace BartenderHelper
         /// <param name="sPrinter">打印机名称，可为空，默认值为系统默认打印机</param>
         /// <param name="lstSubstringName">标签内的变量名称</param>
         /// <param name="lstValue">标签内的变量值</param>
-        /// <param name="iLabelQty">单个标签内容的连续打印数量</param>
+        /// <param name="iRepeatNumberOfSingleLabel">单个标签的连续打印数量</param>
         /// <returns></returns>
-        public static bool PrintLabel(string sLabel, string sPrinter, List<string> lstSubstringName, List<List<string>> lstValue, int iLabelQty)
+        public static bool PrintLabel(string sLabel, string sPrinter, List<string> lstSubstringName, List<List<string>> lstValue, int iRepeatNumberOfSingleLabel)
+        {
+            Log.WriteLog("--Call Function [ PrintLabel(string sLabel, string sPrinter, List<string> lstSubstringName, List<List<string>> lstValue, int iRepeatNumberOfSingleLabel,int iRepeatNumberOfLot) ]--");
+            return PrintLabel(sLabel, sPrinter, lstSubstringName, lstValue, 1,1);
+        }
+
+        /// <summary>
+        /// 打印多个标签内容，标签中有多个变量，指定单个标签重复打印数量，指定批次重复数量
+        /// </summary>
+        /// <param name="sLabel">标签名称，可为空，默认值为BC_DEFAULT.btw</param>
+        /// <param name="sPrinter">打印机名称，可为空，默认值为系统默认打印机</param>
+        /// <param name="lstSubStringName">标签内的变量名称</param>
+        /// <param name="lstValue">标签内的变量值</param>
+        /// <param name="iRepeatNumberOfSingleLabel">单个标签的连续打印数量</param>
+        /// <param name="iRepeatNumberOfLot">整体标签批次重复的次数</param>
+        /// <returns></returns>
+        public static bool PrintLabel(string sLabel, string sPrinter, List<string> lstSubStringName, List<List<string>> lstValue, int iRepeatNumberOfSingleLabel,int iRepeatNumberOfLot)
         {
             #region //记录参数
             string sSubstringName = string.Empty;
-            foreach (var item in lstSubstringName)
+            foreach (var item in lstSubStringName)
             {
+                sSubstringName += "{";
                 sSubstringName += item + ",";
+                sSubstringName += "}";
             }
             string slistValue = string.Empty;
             foreach (var item1 in lstValue)
@@ -461,52 +336,75 @@ namespace BartenderHelper
                 }
                 slistValue += "}";
             }
-
-            Log.WriteLogs("--Params : " + sLabel + ";" + sPrinter + ";" + sSubstringName + ";" + slistValue + ";" + iLabelQty + ";" + "--");
+            //参数写LOG
+            Log.WriteLog("--Params : "
+                + "Label=" + sLabel + ";Printer=" + sPrinter + ";"
+                + "SubstringName=" + sSubstringName + ";SubstringValue=" + slistValue + ";"
+                + "Qty=" + iRepeatNumberOfSingleLabel + ";"
+                + " --");
             #endregion
 
             try
             {
                 //开始打印
-                if (!PrintLabelStart(sLabel, sPrinter))
-                {
-                    return false;
-                }
+                if (!PrintLabelStart(sLabel, sPrinter)) return false;
 
-                //更改打印数量
+                //更改单个标签打印数量，默认为1
                 try
                 {
-                    iQtySingleLabel = iLabelQty > 0 ? iLabelQty : 1;
+                    iQtyLabel = iRepeatNumberOfSingleLabel > 0 ? iRepeatNumberOfSingleLabel : 1;
                 }
                 catch (Exception)
                 {
-                    iQtySingleLabel = 1;
+                    iQtyLabel = 1;
                 }
-                btFormatDoc.PrintSetup.IdenticalCopiesOfLabel = iQtySingleLabel;
-                Log.WriteLogs("--Qty of single label : " + iQtySingleLabel);
+                btFormatDoc.PrintSetup.IdenticalCopiesOfLabel = iQtyLabel;
+                Log.WriteLog("-- Label repeat Qty = " + iQtyLabel + "; --");
 
-                //更改标签内容并打印
-                for (int iValue = 0; iValue < lstValue.Count; iValue++)
+                //更改打印批次数量，默认为1
+                try
                 {
-                    for (int iName = 0; iName < lstSubstringName.Count; iName++)
+                    iQtyLot = iRepeatNumberOfLot > 0 ? iRepeatNumberOfLot : 1;
+                }
+                catch (Exception)
+                {
+                    iQtyLot = 1;
+                }
+                Log.WriteLog("-- Lot repeat qty = " + iQtyLot + "; --");
+                for (int iLot = 0; iLot < iQtyLot; iLot++)
+                {
+                    //更改标签内容并打印
+                    for (int iValue = 0; iValue < lstValue.Count; iValue++)
                     {
-                        btFormatDoc.SubStrings[lstSubstringName[iName]].Value = lstValue[iValue][iName];
-                        Log.WriteLogs("--Value in label : " + lstSubstringName[iName] + " = " + lstValue[iValue][iName]);
+                        string sLabelValue = "[";
+                        for (int iName = 0; iName < lstSubStringName.Count; iName++)
+                        {
+                            btFormatDoc.SubStrings[lstSubStringName[iName]].Value = lstValue[iValue][iName];
+                            sLabelValue += lstSubStringName[iName] + "=" + lstValue[iValue][iName] + ";";
+                        }
+                        sLabelValue += "]";
+                        if (iLot == 0)
+                        {
+                            Log.WriteLog("-- Label " + iValue + ":" + sLabelValue + " --");
+                            Log.WriteLog("--PrintJob start : PrintJob" + iValue + " --");
+                        }
+                        btFormatDoc.Print("PrintJob" + iValue);
+                        if (iLot == 0)
+                        {
+                            Log.WriteLog("--PrintJob finish : PrintJob" + iValue + " --");
+                        }
                     }
-                    Log.WriteLogs("--PrintJob Start : PrintJob" + iValue + "--");
-                    btFormatDoc.Print("PrintJob" + iValue);
-                    Log.WriteLogs("--PrintJob finish : PrintJob" + iValue);
                 }
 
                 //结束打印
-                PrintLabelEnd();
+                if (!PrintLabelEnd()) return false;
 
                 return true;
             }
             catch (Exception ex)
             {
-                Log.WriteLogs("--[Execute error]--public static bool PrintLabel(string sLabel, string sPrinter,List<string> lstSubstringName, List<List<string>> lstValue)--");
-                Log.WriteLogs("--[System Error Msg]--" + ex.Message);
+                Log.WriteLog("--[Execute error] PrintLabel(string sLabel, string sPrinter,List<string> lstSubstringName, List<List<string>> lstValue) --");
+                Log.WriteLog("--[System Error Msg] " + ex.Message + " --");
 
                 return false;
             }
