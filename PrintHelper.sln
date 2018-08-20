@@ -1,15 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.27703.2035
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BartenderHelper", "BartenderHelper\BartenderHelper.csproj", "{1B241605-CB7A-42B4-8F93-1607A0599497}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestPrintStandalone", "TestPrintStandalone\TestPrintStandalone.csproj", "{330A139E-7603-48E5-AAD7-48A1A79D0644}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestForHelper", "TestForHelper\TestForHelper.csproj", "{E5AAE64A-BE54-4FF6-808F-5F8C969EA4D2}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LogHelper", "..\DAL.FileHelper\LogHelper\LogHelper.csproj", "{FE23A230-D0F3-42D9-94A7-396048021E4A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,12 +27,11 @@ Global
 		{E5AAE64A-BE54-4FF6-808F-5F8C969EA4D2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E5AAE64A-BE54-4FF6-808F-5F8C969EA4D2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E5AAE64A-BE54-4FF6-808F-5F8C969EA4D2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{FE23A230-D0F3-42D9-94A7-396048021E4A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{FE23A230-D0F3-42D9-94A7-396048021E4A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{FE23A230-D0F3-42D9-94A7-396048021E4A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{FE23A230-D0F3-42D9-94A7-396048021E4A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {C64525D0-0F7E-4C41-A308-090E26362F22}
 	EndGlobalSection
 EndGlobal
