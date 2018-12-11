@@ -5,9 +5,9 @@ VisualStudioVersion = 15.0.27703.2035
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BartenderHelper", "BartenderHelper\BartenderHelper.csproj", "{1B241605-CB7A-42B4-8F93-1607A0599497}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestPrintStandalone", "TestPrintStandalone\TestPrintStandalone.csproj", "{330A139E-7603-48E5-AAD7-48A1A79D0644}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestClient_BartenderAlone", "TestClient_BartenderAlone\TestClient_BartenderAlone.csproj", "{330A139E-7603-48E5-AAD7-48A1A79D0644}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestForHelper", "TestForHelper\TestForHelper.csproj", "{E5AAE64A-BE54-4FF6-808F-5F8C969EA4D2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestClient_BartenderHelper", "TestClient_BartenderHelper\TestClient_BartenderHelper.csproj", "{E5AAE64A-BE54-4FF6-808F-5F8C969EA4D2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
