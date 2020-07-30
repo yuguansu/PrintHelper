@@ -35,9 +35,6 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="LogHelper">
-      <HintPath>..\..\libs.dll\LogHelper.dll</HintPath>
-    </Reference>
     <Reference Include="Seagull.BarTender.Print, Version=11.0.3.1, Culture=neutral, PublicKeyToken=109ff779a1b4cbc7, processorArchitecture=x86">
       <HintPath>.\Seagull.BarTender.Print.dll</HintPath>
     </Reference>
@@ -60,6 +57,12 @@
     <None Include="BC_DEFAULT.btw">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\LogHelper\LogHelper.csproj">
+      <Project>{fe23a230-d0f3-42d9-94a7-396048021e4a}</Project>
+      <Name>LogHelper</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

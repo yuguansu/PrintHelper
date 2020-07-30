@@ -126,9 +126,10 @@ namespace BartenderHelper
             {
                 iQtyLabel = iQtyLabel > 0 ? iQtyLabel : 1;
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 iQtyLabel = 1;
+
             }
             btFormatDoc.PrintSetup.IdenticalCopiesOfLabel = iQtyLabel;
             Log.WriteLog("-- Label repeat Qty = " + iQtyLabel + "; --");
@@ -141,6 +142,7 @@ namespace BartenderHelper
             catch (Exception)
             {
                 iQtyLot = 1;
+                Log.WriteLog("-- Label Qty error , set default : Qty = 1");
             }
             Log.WriteLog("-- Lot repeat qty = " + iQtyLot + "; --");
 
@@ -172,6 +174,7 @@ namespace BartenderHelper
                     }
                 }
                 //没有指定标签内容时，直接打印标签模板文件
+                //这里可以根据实际需求取消打印
                 else
                 {
                     if (iLot == 0)
